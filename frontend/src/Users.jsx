@@ -1,9 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Users()
 {
+    const[ids,setIds]=useState([]);
+    const[isselect,setIsSelect]=useState(false);
     const [showToast, setShowToast] = useState(false);
 const [toastMsg, setToastMsg] = useState("");
 const [toastType, setToastType] = useState("success");
@@ -52,9 +54,33 @@ useEffect(()=>{
   fetchUsers() ; 
 },[])
 
+const handleDeleteSelected=async()=>{
+  console.log("ids length ",ids);
+  const res=await axios.delete("http://localhost:9090/delete-multiple",ids);
+ try{
+setTimeout(() => setShowToast(false), 2000);
+    if(res.data==='deleted'){
+      fetchUsers();
+    setShowToast(true);
+    setToastMsg("Selected User Deleted successfully....");
+    setToastType("success");
+ }}catch(err)
+ {
+setShowToast(true);
+    setToastMsg("Selected User is not be Deleted....");
+    setToastType("danger");
+ }
+  fetchUsers();
+
+}
+const handlecheckbox=(id)=>{
+  setIds((prevIds)=>(prevIds.includes(id)?
+  prevIds.filter((previd)=>previd!==id)     //remove when untick checkbox
+  :[...prevIds,id]))      //add when tick checkbox
+}
 return (
 
-  <div className="container mt-4">
+  <div className="container-fluid mt-0">
 
     {isuserEmpty ? (<h1   className="text-secondary fs-1 text-center"> No user records Here yet !!</h1>):""}
 {showToast && (
@@ -85,10 +111,36 @@ return (
         <div className="text-primary fs-3 fw-semibold">Loading....</div>
       </>
     ) : (
+      <>
+
+      {/* .............multiple Delete User feature.............. */}
+      <div className="d-flex">
+        {isselect ? (
+          <>
+          <button onClick={()=>setIsSelect(!isselect)} 
+          className="ms-3 btn btn-primary mb-3">
+             <i className="bi bi-x-circle me-2"></i> 
+            Cancel Selection </button>
+            <button onClick={handleDeleteSelected} 
+          className="ms-3 btn btn-danger mb-3">
+              <i className="me-2 bi bi-trash mb-3"></i> 
+            Delete Selected </button>
+            </>
+    
+
+ ):(<button onClick={()=>setIsSelect(!isselect)} 
+ className="ms-1 btn btn-primary mb-3">
+   <i className="bi bi-check2-square me-2"></i> 
+  Select Multiple</button>
+)}
+
+    </div>
+
 
       <div className="row">
 
         {users.map((u) => (
+
           <div className="col-md-6 mb-4" key={u.userId}>
 
             <div className="card shadow w-100">
@@ -109,7 +161,20 @@ return (
                 <div className="col-md-7">
 
                   <div className="card-body">
-                    <h5 className="card-title">{u.name}</h5>
+                    <div className="row"><div className="ms-4 col-8">
+                      <h5 className="card-title">{u.name}</h5>
+                      </div>
+                      {isselect && <div className="form-check col-3"> 
+                        <label className="form-check-label" htmlFor="checkDefault">Select</label>
+                 <input onChange={()=>handlecheckbox(u.userId)} className="form-check-input" type="checkbox" value="" id="checkDefault"/>
+  
+</div>
+                      }
+                      
+
+                      </div>
+                    
+
                     <p className="card-text">ID: {u.userId}</p>
                   </div>
 
@@ -139,7 +204,7 @@ return (
 
       </div>
 
-    )}
+    </>)}
 
   </div>
 );
