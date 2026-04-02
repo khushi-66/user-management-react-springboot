@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -109,7 +110,6 @@ public class UserRestController {
 				oldfile.delete();
 			}
 			
-			
 			//new file updation.....
 			 String filename= file.getOriginalFilename();
 			  if(file.isEmpty()) {
@@ -159,12 +159,34 @@ public class UserRestController {
 		if(file.exists()){
 			file.delete();
 			
-			return "deleted";
+		return "deleted";
 		}
 		
 		return "not found";
 	}
 	
+	//####################   Multiple User Deletion  ###################################
+	@DeleteMapping("/delete-multiple")
+	public String multipledeleteUser(@RequestBody List<Integer>ids) {
+		boolean flag=false;
+		System.out.println("IDS : "+ids);
+		for(Integer id:ids ) {
+			flag=false;
+			UserDto u=serv.findUserById(id);
+			String imagename=u.getImagepath();
+			System.out.println("imagename : "+u.getImagepath());
+			File file=new File(uploadpath+imagename);
+			serv.deleteUser(id);
+			if(file.exists()){
+				file.delete();
+				flag=true;
+				}
+			if(flag) {
+				return "deleted";
+			}
+		}
+		return "not found";
+	}
 	
 	
 }

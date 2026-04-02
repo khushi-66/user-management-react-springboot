@@ -13,6 +13,8 @@ const [toastType, setToastType] = useState("success");
     const navigate=useNavigate();
     const[loading,setLoading]=useState(true);
 const[isuserEmpty,setisuserEmpty]=useState(false);
+const[search,setSearch]=useState('');
+
     const fetchUsers=async()=>{
    axios.get('http://localhost:9090/show').then((res)=>{
 setUsers( res.data);
@@ -56,7 +58,11 @@ useEffect(()=>{
 
 const handleDeleteSelected=async()=>{
   console.log("ids length ",ids);
-  const res=await axios.delete("http://localhost:9090/delete-multiple",ids);
+  const res=await axios.delete("http://localhost:9090/delete-multiple",{data:ids,
+    headers: {
+        "Content-Type": "application/json", 
+      },
+  });
  try{
 setTimeout(() => setShowToast(false), 2000);
     if(res.data==='deleted'){
@@ -70,6 +76,7 @@ setShowToast(true);
     setToastMsg("Selected User is not be Deleted....");
     setToastType("danger");
  }
+
   fetchUsers();
 
 }
@@ -113,8 +120,20 @@ return (
     ) : (
       <>
 
-      {/* .............multiple Delete User feature.............. */}
-      <div className="d-flex">
+      {/* ###################   multiple Delete User feature  ################### */}
+      <div className="d-flex justify-content-between mb-3">
+        <div className=" input-group mb-3 me-4" style={{maxWidth:"550px"}}>
+  <span className="input-group-text bg-primary border-primary">
+    <i className="bi bi-search"></i>
+  </span>
+  <input
+    type="text"
+    className="form-control"
+    placeholder="Search by name"
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
+</div>
         {isselect ? (
           <>
           <button onClick={()=>setIsSelect(!isselect)} 
@@ -126,15 +145,13 @@ return (
               <i className="me-2 bi bi-trash mb-3"></i> 
             Delete Selected </button>
             </>
-    
-
- ):(<button onClick={()=>setIsSelect(!isselect)} 
- className="ms-1 btn btn-primary mb-3">
+    ):(
+<button onClick={()=>setIsSelect(!isselect)} 
+ className="ms-1 btn btn-primary mb-1">
    <i className="bi bi-check2-square me-2"></i> 
   Select Multiple</button>
 )}
-
-    </div>
+</div>
 
 
       <div className="row">
@@ -147,7 +164,7 @@ return (
 
               <div className="row g-0">
 
-                {/*  LEFT IMAGE */}
+                
                 <div className="col-md-5">
                   <img
                     src={`http://localhost:9090/uploads/${u.imagepath}`}
@@ -157,7 +174,7 @@ return (
                   />
                 </div>
 
-                {/*  RIGHT CONTENT */}
+                
                 <div className="col-md-7">
 
                   <div className="card-body">
